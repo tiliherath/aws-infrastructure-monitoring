@@ -1,0 +1,241 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Creates the VPC and subnet infrastructure for the
+  AWS Linux Infrastructure Monitoring and Automation project.
+
+Parameters:
+
+  EnvironmentName:
+    Type: String
+    Default: LinuxMonitoring
+    Description: Environment name used to identify resources.
+
+  VPCCidr:
+    Type: String
+    Default: 10.20.0.0/16
+    Description: CIDR block for the project VPC.
+
+Resources:
+
+  # ------------------------------------------------------------
+  # VPC
+  # ------------------------------------------------------------
+
+  ProjectVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-VPC'
+
+  # ------------------------------------------------------------
+  # Internet Gateway
+  # ------------------------------------------------------------
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-IGW'
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ProjectVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  # ------------------------------------------------------------
+  # Public Subnet - AZ1
+  # ------------------------------------------------------------
+
+  PublicSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProjectVPC
+      CidrBlock: 10.20.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Public-AZ1'
+
+  # ------------------------------------------------------------
+  # Public Subnet - AZ2
+  # ------------------------------------------------------------
+
+  PublicSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProjectVPC
+      CidrBlock: 10.20.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Public-AZ2'
+
+  # ------------------------------------------------------------
+  # Private Subnet - AZ1
+  # ------------------------------------------------------------
+
+  PrivateSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProjectVPC
+      CidrBlock: 10.20.11.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Private-AZ1'
+
+  # ------------------------------------------------------------
+  # Private Subnet - AZ2
+  # ------------------------------------------------------------
+
+  PrivateSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProjectVPC
+      CidrBlock: 10.20.12.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Private-AZ2'
+
+  # ------------------------------------------------------------
+  # Public Route Table
+  # ------------------------------------------------------------
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ProjectVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Public-RT'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociationAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnetAZ1
+
+  PublicSubnetRouteTableAssociationAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnetAZ2
+
+  # ------------------------------------------------------------
+  # Elastic IP for NAT Gateway
+  # ------------------------------------------------------------
+
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-NAT-EIP'
+
+  # ------------------------------------------------------------
+  # NAT Gateway
+  # ------------------------------------------------------------
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnetAZ1
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-NAT-Gateway'
+
+  # ------------------------------------------------------------
+  # Private Route Table - AZ1
+  # ------------------------------------------------------------
+
+  PrivateRouteTableAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ProjectVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Private-AZ1-RT'
+
+  PrivateRouteAZ1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableAZ1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetRouteTableAssociationAZ1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableAZ1
+      SubnetId: !Ref PrivateSubnetAZ1
+
+  # ------------------------------------------------------------
+  # Private Route Table - AZ2
+  # ------------------------------------------------------------
+
+  PrivateRouteTableAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ProjectVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Private-AZ2-RT'
+
+  PrivateRouteAZ2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableAZ2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetRouteTableAssociationAZ2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableAZ2
+      SubnetId: !Ref PrivateSubnetAZ2
+
+Outputs:
+
+  VPCId:
+    Description: ID of the project VPC.
+    Value: !Ref ProjectVPC
+
+  PublicSubnetAZ1:
+    Description: Public subnet in Availability Zone 1.
+    Value: !Ref PublicSubnetAZ1
+
+  PublicSubnetAZ2:
+    Description: Public subnet in Availability Zone 2.
+    Value: !Ref PublicSubnetAZ2
+
+  PrivateSubnetAZ1:
+    Description: Private subnet in Availability Zone 1.
+    Value: !Ref PrivateSubnetAZ1
+
+  PrivateSubnetAZ2:
+    Description: Private subnet in Availability Zone 2.
+    Value: !Ref PrivateSubnetAZ2
+  

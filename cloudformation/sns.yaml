@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Creates an Amazon SNS topic for infrastructure monitoring
+  notifications.
+
+Parameters:
+
+  EnvironmentName:
+    Type: String
+    Default: LinuxMonitoring
+    Description: Environment name used to identify resources.
+
+  NotificationEmail:
+    Type: String
+    Description: Email address that will receive infrastructure alerts.
+
+Resources:
+
+  # ------------------------------------------------------------
+  # SNS Topic
+  # ------------------------------------------------------------
+
+  InfrastructureAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${EnvironmentName}-InfrastructureAlerts'
+      DisplayName: !Sub '${EnvironmentName} Infrastructure Alerts'
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-InfrastructureAlerts'
+
+  # ------------------------------------------------------------
+  # Email Subscription
+  # ------------------------------------------------------------
+
+  InfrastructureAlertsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref InfrastructureAlertsTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+
+Outputs:
+
+  InfrastructureAlertsTopicArn:
+    Description: ARN of the SNS infrastructure alerts topic.
+    Value: !Ref InfrastructureAlertsTopic
+    Export:
+      Name: !Sub '${EnvironmentName}-SNSTopicArn'

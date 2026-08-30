@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Creates IAM roles and instance profiles required for
+  Linux EC2 instances, AWS Systems Manager, and CloudWatch.
+
+Resources:
+
+  # ------------------------------------------------------------
+  # EC2 IAM Role
+  # ------------------------------------------------------------
+
+  LinuxEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LinuxInfrastructureEC2Role
+      Description: IAM role for Linux EC2 instances.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+
+      Tags:
+        - Key: Name
+          Value: LinuxInfrastructureEC2Role
+
+  # ------------------------------------------------------------
+  # EC2 Instance Profile
+  # ------------------------------------------------------------
+
+  LinuxEC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: LinuxInfrastructureEC2InstanceProfile
+      Roles:
+        - !Ref LinuxEC2Role
+
+Outputs:
+
+  LinuxEC2RoleArn:
+    Description: ARN of the IAM role used by Linux EC2 instances.
+    Value: !GetAtt LinuxEC2Role.Arn
+
+  LinuxEC2InstanceProfile:
+    Description: Instance profile attached to Linux EC2 instances.
+    Value: !Ref LinuxEC2InstanceProfile

@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Creates Linux EC2 instances for the AWS Linux Infrastructure
+  Monitoring and Automation project.
+
+Parameters:
+
+  EnvironmentName:
+    Type: String
+    Default: LinuxMonitoring
+    Description: Environment name used to identify resources.
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type for the Linux servers.
+
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+    Description: Latest Amazon Linux 2023 AMI.
+
+Resources:
+
+  # ------------------------------------------------------------
+  # Security Group
+  # ------------------------------------------------------------
+
+  LinuxServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Linux infrastructure servers.
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: '${EnvironmentName}-VPCId'
+      SecurityGroupIngress: []
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Linux-SG'
+
+  # ------------------------------------------------------------
+  # Linux Server 1
+  # ------------------------------------------------------------
+
+  LinuxServer01:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+
+      SubnetId:
+        Fn::ImportValue:
+          Fn::Sub: '${EnvironmentName}-PrivateSubnetAZ1'
+
+      IamInstanceProfile:
+        Fn::ImportValue:
+          Fn::Sub: '${EnvironmentName}-EC2InstanceProfile'
+
+      SecurityGroupIds:
+        - !Ref LinuxServerSecurityGroup
+
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Linux-01'
+
+  # ------------------------------------------------------------
+  # Linux Server 2
+  # ------------------------------------------------------------
+
+  LinuxServer02:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+
+      SubnetId:
+        Fn::ImportValue:
+          Fn::Sub: '${EnvironmentName}-PrivateSubnetAZ2'
+
+      IamInstanceProfile:
+        Fn::ImportValue:
+          Fn::Sub: '${EnvironmentName}-EC2InstanceProfile'
+
+      SecurityGroupIds:
+        - !Ref LinuxServerSecurityGroup
+
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Linux-02'
+
+Outputs:
+
+  LinuxServer01Id:
+    Description: Instance ID of Linux Server 01.
+    Value: !Ref LinuxServer01
+
+  LinuxServer02Id:
+    Description: Instance ID of Linux Server 02.
+    Value: !Ref LinuxServer02
+
+  LinuxSecurityGroupId:
+    Description: Security Group ID for the Linux servers.
+    Value: !Ref LinuxServerSecurityGroup
