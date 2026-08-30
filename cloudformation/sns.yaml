@@ -24,7 +24,6 @@ Resources:
   InfrastructureAlertsTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: !Sub '${EnvironmentName}-InfrastructureAlerts'
       DisplayName: !Sub '${EnvironmentName} Infrastructure Alerts'
       Tags:
         - Key: Name

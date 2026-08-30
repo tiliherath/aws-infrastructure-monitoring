@@ -13,7 +13,7 @@ Resources:
   LinuxEC2Role:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: LinuxInfrastructureEC2Role
+      InstanceProfileName: LinuxInfrastructureEC2InstanceProfile
       Description: IAM role for Linux EC2 instances.
       AssumeRolePolicyDocument:
         Version: '2012-10-17'

@@ -45,6 +45,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
 
+      AlarmActions:
+        - Fn::ImportValue:
+            Fn::Sub: '${EnvironmentName}-SNSTopicArn'
+
   # ------------------------------------------------------------
   # Linux Server 02 - High CPU Alarm
   # ------------------------------------------------------------
@@ -71,6 +75,10 @@ Resources:
       Threshold: !Ref CPUThreshold
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+
+      AlarmActions:
+        - Fn::ImportValue:
+            Fn::Sub: '${EnvironmentName}-SNSTopicArn'
 
   # ------------------------------------------------------------
   # Linux Server 01 - Status Check Alarm
@@ -99,6 +107,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: breaching
 
+      AlarmActions:
+        - Fn::ImportValue:
+            Fn::Sub: '${EnvironmentName}-SNSTopicArn'
+
   # ------------------------------------------------------------
   # Linux Server 02 - Status Check Alarm
   # ------------------------------------------------------------
@@ -125,6 +137,10 @@ Resources:
       Threshold: 0
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: breaching
+
+      AlarmActions:
+        - Fn::ImportValue:
+            Fn::Sub: '${EnvironmentName}-SNSTopicArn'
 
 Outputs:
 
