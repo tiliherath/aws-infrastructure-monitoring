@@ -13,8 +13,8 @@ Resources:
   LinuxEC2Role:
     Type: AWS::IAM::Role
     Properties:
-      InstanceProfileName: LinuxInfrastructureEC2InstanceProfile
       Description: IAM role for Linux EC2 instances.
+
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -50,10 +50,10 @@ Outputs:
     Description: ARN of the IAM role used by Linux EC2 instances.
     Value: !GetAtt LinuxEC2Role.Arn
     Export:
-      Name: !Sub '${AWs::StackName}-LinuxEC2RoleArn'
+      Name: !Sub '${AWS::StackName}-LinuxEC2RoleArn'
 
   LinuxEC2InstanceProfile:
     Description: Instance profile attached to Linux EC2 instances.
     Value: !Ref LinuxEC2InstanceProfile
     Export:
-      Name: !Sub '${AWs::StackName}-LinuxEC2InstanceProfile'
+      Name: !Sub '${AWS::StackName}-LinuxEC2InstanceProfile'
