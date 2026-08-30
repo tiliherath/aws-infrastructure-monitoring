@@ -49,7 +49,11 @@ Outputs:
   LinuxEC2RoleArn:
     Description: ARN of the IAM role used by Linux EC2 instances.
     Value: !GetAtt LinuxEC2Role.Arn
+    Export:
+      Name: !Sub '${AWs::StackName}-LinuxEC2RoleArn'
 
   LinuxEC2InstanceProfile:
     Description: Instance profile attached to Linux EC2 instances.
     Value: !Ref LinuxEC2InstanceProfile
+    Export:
+      Name: !Sub '${AWs::StackName}-LinuxEC2InstanceProfile'

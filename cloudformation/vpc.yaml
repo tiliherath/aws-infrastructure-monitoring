@@ -222,20 +222,30 @@ Outputs:
   VPCId:
     Description: ID of the project VPC.
     Value: !Ref ProjectVPC
+    Export:
+      Name: !Sub '${EnvironmentName}-VPCId'
 
   PublicSubnetAZ1:
     Description: Public subnet in Availability Zone 1.
     Value: !Ref PublicSubnetAZ1
+    Export:
+      Name: !Sub '${EnvironmentName}-PublicSubnetAZ1'
 
   PublicSubnetAZ2:
     Description: Public subnet in Availability Zone 2.
     Value: !Ref PublicSubnetAZ2
+    Export:
+      Name: !Sub '${EnvironmentName}-PublicSubnetAZ2'
 
   PrivateSubnetAZ1:
     Description: Private subnet in Availability Zone 1.
     Value: !Ref PrivateSubnetAZ1
+    Export:
+      Name: !Sub '${EnvironmentName}-PrivateSubnetAZ1'
 
   PrivateSubnetAZ2:
     Description: Private subnet in Availability Zone 2.
     Value: !Ref PrivateSubnetAZ2
+    Export:
+      Name: !Sub '${EnvironmentName}-PrivateSubnetAZ2'
   

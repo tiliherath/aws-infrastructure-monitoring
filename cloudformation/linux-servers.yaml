@@ -34,20 +34,24 @@ Resources:
       VpcId:
         Fn::ImportValue:
           Fn::Sub: '${EnvironmentName}-VPCId'
+
       SecurityGroupIngress: []
+
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
+
       Tags:
         - Key: Name
           Value: !Sub '${EnvironmentName}-Linux-SG'
 
   # ------------------------------------------------------------
-  # Linux Server 1
+  # Linux Server 01
   # ------------------------------------------------------------
 
   LinuxServer01:
     Type: AWS::EC2::Instance
+
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
@@ -58,7 +62,7 @@ Resources:
 
       IamInstanceProfile:
         Fn::ImportValue:
-          Fn::Sub: '${EnvironmentName}-EC2InstanceProfile'
+          Fn::Sub: '${EnvironmentName}-IAM-EC2InstanceProfile'
 
       SecurityGroupIds:
         - !Ref LinuxServerSecurityGroup
@@ -68,11 +72,12 @@ Resources:
           Value: !Sub '${EnvironmentName}-Linux-01'
 
   # ------------------------------------------------------------
-  # Linux Server 2
+  # Linux Server 02
   # ------------------------------------------------------------
 
   LinuxServer02:
     Type: AWS::EC2::Instance
+
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
@@ -83,7 +88,7 @@ Resources:
 
       IamInstanceProfile:
         Fn::ImportValue:
-          Fn::Sub: '${EnvironmentName}-EC2InstanceProfile'
+          Fn::Sub: '${EnvironmentName}-IAM-EC2InstanceProfile'
 
       SecurityGroupIds:
         - !Ref LinuxServerSecurityGroup
@@ -97,11 +102,17 @@ Outputs:
   LinuxServer01Id:
     Description: Instance ID of Linux Server 01.
     Value: !Ref LinuxServer01
+    Export:
+      Name: !Sub '${EnvironmentName}-LinuxServer01Id'
 
   LinuxServer02Id:
     Description: Instance ID of Linux Server 02.
     Value: !Ref LinuxServer02
+    Export:
+      Name: !Sub '${EnvironmentName}-LinuxServer02Id'
 
   LinuxSecurityGroupId:
     Description: Security Group ID for the Linux servers.
     Value: !Ref LinuxServerSecurityGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-LinuxSecurityGroupId'
