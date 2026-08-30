@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Creates CloudWatch monitoring and alarms for the Linux
+  infrastructure servers.
+
+Parameters:
+
+  EnvironmentName:
+    Type: String
+    Default: LinuxMonitoring
+    Description: Environment name used to identify resources.
+
+  CPUThreshold:
+    Type: Number
+    Default: 80
+    Description: CPU utilization percentage that triggers the alarm.
+
+Resources:
+
+  # ------------------------------------------------------------
+  # Linux Server 01 - High CPU Alarm
+  # ------------------------------------------------------------
+
+  LinuxServer01CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: !Sub >
+        Alarm when ${EnvironmentName}-Linux-01 CPU utilization
+        exceeds ${CPUThreshold}%.
+      AlarmName: !Sub '${EnvironmentName}-Linux01-HighCPU'
+      Namespace: AWS/EC2
+      MetricName: CPUUtilization
+      Dimensions:
+        - Name: InstanceId
+          Value:
+            Fn::ImportValue:
+              Fn::Sub: '${EnvironmentName}-LinuxServer01Id'
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: !Ref CPUThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # ------------------------------------------------------------
+  # Linux Server 02 - High CPU Alarm
+  # ------------------------------------------------------------
+
+  LinuxServer02CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: !Sub >
+        Alarm when ${EnvironmentName}-Linux-02 CPU utilization
+        exceeds ${CPUThreshold}%.
+      AlarmName: !Sub '${EnvironmentName}-Linux02-HighCPU'
+      Namespace: AWS/EC2
+      MetricName: CPUUtilization
+      Dimensions:
+        - Name: InstanceId
+          Value:
+            Fn::ImportValue:
+              Fn::Sub: '${EnvironmentName}-LinuxServer02Id'
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: !Ref CPUThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  # ------------------------------------------------------------
+  # Linux Server 01 - Status Check Alarm
+  # ------------------------------------------------------------
+
+  LinuxServer01StatusAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: !Sub >
+        Alarm when ${EnvironmentName}-Linux-01 fails an EC2
+        system or instance status check.
+      AlarmName: !Sub '${EnvironmentName}-Linux01-StatusCheck'
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed
+      Dimensions:
+        - Name: InstanceId
+          Value:
+            Fn::ImportValue:
+              Fn::Sub: '${EnvironmentName}-LinuxServer01Id'
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: breaching
+
+  # ------------------------------------------------------------
+  # Linux Server 02 - Status Check Alarm
+  # ------------------------------------------------------------
+
+  LinuxServer02StatusAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: !Sub >
+        Alarm when ${EnvironmentName}-Linux-02 fails an EC2
+        system or instance status check.
+      AlarmName: !Sub '${EnvironmentName}-Linux02-StatusCheck'
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed
+      Dimensions:
+        - Name: InstanceId
+          Value:
+            Fn::ImportValue:
+              Fn::Sub: '${EnvironmentName}-LinuxServer02Id'
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: breaching
+
+Outputs:
+
+  LinuxServer01CPUAlarm:
+    Description: CloudWatch high CPU alarm for Linux Server 01.
+    Value: !Ref LinuxServer01CPUAlarm
+
+  LinuxServer02CPUAlarm:
+    Description: CloudWatch high CPU alarm for Linux Server 02.
+    Value: !Ref LinuxServer02CPUAlarm
+
+  LinuxServer01StatusAlarm:
+    Description: CloudWatch status check alarm for Linux Server 01.
+    Value: !Ref LinuxServer01StatusAlarm
+
+  LinuxServer02StatusAlarm:
+    Description: CloudWatch status check alarm for Linux Server 02.
+    Value: !Ref LinuxServer02StatusAlarm
