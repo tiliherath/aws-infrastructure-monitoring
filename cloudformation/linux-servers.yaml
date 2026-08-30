@@ -62,7 +62,7 @@ Resources:
 
       IamInstanceProfile:
         Fn::ImportValue:
-          Fn::Sub: '${EnvironmentName}-IAM-EC2InstanceProfile'
+          Fn::Sub: '${EnvironmentName}-IAM-LinuxEC2InstanceProfile'
 
       SecurityGroupIds:
         - !Ref LinuxServerSecurityGroup
@@ -88,7 +88,7 @@ Resources:
 
       IamInstanceProfile:
         Fn::ImportValue:
-          Fn::Sub: '${EnvironmentName}-IAM-EC2InstanceProfile'
+          Fn::Sub: '${EnvironmentName}-IAM-LinuxEC2InstanceProfile'
 
       SecurityGroupIds:
         - !Ref LinuxServerSecurityGroup
