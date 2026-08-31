@@ -13,6 +13,7 @@ Parameters:
 
   NotificationEmail:
     Type: String
+    Default: tili.aws.study@gmail.com
     Description: Email address that will receive infrastructure alerts.
 
 Resources:
